@@ -48,6 +48,33 @@ def spam_sandwich(driver,id):
 		except WebDriverException:
 			break
 
+# This function navigates the webpage and allows you to press buttons that Selenium can't normally press.
+#	This is accomplished by TAB and SPACE presses. It will press TAB a certain number of times, then press
+#	SPACE to hit the button. Note! the function will then SHIFT+TAB to reset you back to your original
+#	position. If you want your ending position to actually move across the page, then use tab_move().
+def hit_button_with_space(actions,tabs):
+	tabs = int(tabs)
+	for count in range(0,tabs):
+		actions = actions.send_keys(Keys.TAB)
+	actions = actions.send_keys(Keys.SPACE)
+	actions.perform()
+	time.sleep(1)
+	for count in range(0,tabs):
+		actions = actions.key_down(Keys.SHIFT).send_keys(Keys.TAB).key_up(Keys.SHIFT)
+	actions.perform() # This performs the actions and also clears them out from the actions stack
+	time.sleep(1)
+
+def tab_move(actions,tabs):
+	tabs = int(tabs)
+	if tabs < 0: #It should only be < 0 for debug purposes
+		for count in range(0,-tabs):
+			actions = actions.key_down(Keys.SHIFT).send_keys(Keys.TAB).key_up(Keys.SHIFT)
+			actions.perform()
+	else:	
+		for count in range(0,tabs):
+			actions = actions.send_keys(Keys.TAB)	
+			actions.perform()
+
 
 import time # For a pause with time.sleep()
 import getpass # For a hidden password input through getpass.getpass()
@@ -66,6 +93,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 # Load a headless browser and set the URL of the Redcap survey:
 options = webdriver.ChromeOptions() ; options.headless = True ; url = "https://redcap.partners.org/redcap/plugins/survey_token/survey_token_login.php?pid=18168&hash=988968e7-e9d0-4581-9c1e-0ddd3f5b8036"
+
 
 
 
@@ -121,94 +149,41 @@ with webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), op
 	except WebDriverException:
 		time.sleep(1)
 
-	# actions = ActionChains(driver)
 
-	# Answer the question for Fit Test Result. Just a note, if you're looking for the xpath of something
-	#	like the "Failed" button on the survey; Ctrl+F the Inspect Element and it will be the 2nd of 
-	#	the two viable elements in the HTML script. Chrome will highlight the word itself inside the
-	#	survey button, not the whole button -- when you select it in the HTML.
-	
-	# Small
-	if 1:
-	the_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[1]/label/span"""
-	driver.find_element("xpath",the_xpath).click()
+	actions = ActionChains(driver)
 
-	# Failed
-	if 1: 
-	the_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[2]/label/span"""
-	driver.find_element("xpath",the_xpath).click()
+	# Move to the Fit Test Result question:
+	tab_move(actions,2)
 
-	# Med/Reg
-	if 1: 
-	the_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[3]/label/span"""
-	driver.find_element("xpath",the_xpath).click()
+	# Make your answer 
+	hit_button_with_space(actions,input( "What size? (0 = Small, 1 = Failed, 2 = Med/Red)  " ))
 
+	# Move to the next question:
+	tab_move(actions,4)
 
-	# Answer: Was the respirator test successful?
-	
-	# Yes
-	if 1: 
-		the_xpath = """//*[@id="fittestpassed-tr"]/td[2]/i/span/div/div[1]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
-	
-	# No
-	if 1: 
-		the_xpath = """//*[@id="fittestpassed-tr"]/td[2]/i/span/div/div[2]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
+	# Make your answer 
+	hit_button_with_space(actions,input(  "Was the test successful? (0 = Yes, 1 = No)  " )  )
 
-	# Answer (if you just said "no"): What was the failed reason?
+	# Move to the next question:
+	tab_move(actions,3)
 
-	# Facial hair
-	if 1: 
-		the_xpath = """//*[@id="fittestfailreason-tr"]/td[2]/i/span/div/div[1]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
-	# Facial Size, Shape, or Structure
-	if 1: 
-		the_xpath = """//*[@id="fittestfailreason-tr"]/td[2]/i/span/div/div[2]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
-	
-	# Answer: Respirator Model?	
+	# Note that here the survey changes depending on your answer. If you click "No", an extra
+	#	question pops up. However the survey seems broken as it doesn't ever pop up that 
+	#	question if you navigate with tab+space. Oh well, I'm just gonna ignore it for now.
 
-	# 3M 1860S
-	if 1: 
-		the_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[3]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
-	# 3M 1860
-	if 1: 
-		the_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[3]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
-	# 3M 1870+
-	if 1: 
-		the_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[9]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
-		driver.find_element("xpath",the_xpath).click()
+	# Answer Respirator Model:
+	hit_button_with_space(actions,15) # 0 to 23, depending on model. 15 should get you to "Envo"
 
-	# Halyard Fluidshield #46827 S
-		if 1: 
-			the_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[20]/label/span"""
-			driver.find_element("xpath",the_xpath).click()
+	# Move to the next question:
+	tab_move(actions,2)
 
-	# Halyard Fluidshield 46727 R
-		if 1: 
-			the_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[22]/label/span"""
-			driver.find_element("xpath",the_xpath).click()
-	
-	# blah
-		if 1: 
-			the_xpath = """
-			driver.find_element("xpath",the_xpath).click()
-	# blah
-		if 1: 
-			the_xpath = """
-			driver.find_element("xpath",the_xpath).click()
-
-
-
-
-
-
-
-
+	# Answer Respirator Class:
+	hit_button_with_space(actions,input("Respirator Class (0 for N95, 1 for PAPR): "))
+ 
+#Actually, WAIT! The Respirator Class question doesn't even come up with tab+space; you need an actual click.
+# I cannot use the tab+space strategy then, and will instead now use xpath to find elements that I couldn't
+# locate before (because they had no obvious HTML id). And I'll click them, which is possible even though I
+# didn't realize it before.
 
 
 
