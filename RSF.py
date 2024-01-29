@@ -4,7 +4,7 @@
 #	each time, because the program will run and do the waiting for you.
 # I made this as a way to learn Selenium. See a guide here: 
 #	https://www.scaler.com/topics/selenium-tutorial/form-input-in-selenium/
-# Make sure Selenium is installed and up-to-date (use pip).
+# Make sure Selenium is installed and up-to-date (use pip, ie with "pip install --upgrade selenium").
 # The most important function here is driver.find_element(attribute,name). It's how you locate
 #	HTML elements for the program to work with. Use Inspect Element on a webpage to find
 #	the attribute of your element (i.e. "id" or "class" or "style") and the actual 
@@ -55,7 +55,7 @@ import getpass # For a hidden password input through getpass.getpass()
 # Import tools that I don't understand:
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
+
 from selenium.common.exceptions import WebDriverException
 
 # So I can navigate the webpage with tab and space keys:
@@ -68,8 +68,13 @@ from selenium.webdriver.common.action_chains import ActionChains
 options = webdriver.ChromeOptions() ; options.headless = True ; url = "https://redcap.partners.org/redcap/plugins/survey_token/survey_token_login.php?pid=18168&hash=988968e7-e9d0-4581-9c1e-0ddd3f5b8036"
 
 
-
-with webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options) as driver:
+# I used to use the following two lines, but they only work on some computers (perhaps a problem with Chrome versions?)
+#from webdriver_manager.chrome import ChromeDriverManager
+#with webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options) as driver:
+# Now, instead of the above two lines, I use the below two lines (the "if 1:" is to keep indentation valid)
+if 1:
+	driver = webdriver.Chrome()
+	
 	# Load the webpage
 	driver.get(url)
 
@@ -96,7 +101,8 @@ with webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), op
 
 	# Spam the Select Employee button until it's actually clickable. Unfortunately, Selenium still
 	#	thinks it's "clickable" even after the website already registers the click. So, we have
-	#	 to click the button until it's clickable, and then eventually becomes non-clickable 			# 	again. Only then can we be sure it was registered and we can move on to the next button.
+	#	 to click the button until it's clickable, and then eventually becomes non-clickable 			
+	# 	again. Only then can we be sure it was registered and we can move on to the next button.
 	spam_sandwich(driver,"cpsubmit")
 	
 	# Do the same for the "Respirator Fit Testing" button:
@@ -123,98 +129,97 @@ with webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), op
 
 	# actions = ActionChains(driver)
 
+	# The next step is loading up all the xpath variables. These may change over time but are unlikely to:
+	Small_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[1]/label/span"""
+	Failed_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[2]/label/span"""
+	MedReg_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[3]/label/span"""
+	Yes_xpath = """//*[@id="fittestpassed-tr"]/td[2]/i/span/div/div[1]/label/span"""
+	No_xpath = """//*[@id="fittestpassed-tr"]/td[2]/i/span/div/div[2]/label/span"""
+	FacialHair_xpath = """//*[@id="fittestfailreason-tr"]/td[2]/i/span/div/div[1]/label/span"""
+	FacialSize_xpath = """//*[@id="fittestfailreason-tr"]/td[2]/i/span/div/div[2]/label/span"""
+	Mask1860S_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[3]/label/span"""
+	Mask1860_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[3]/label/span"""
+	Mask1870Plus_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[9]/label/span"""
+	HalyardSmall_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[20]/label/span"""
+	HalyardRegular_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[22]/label/span"""
+	N95_xpath = """//*[@id="respclass-tr"]/td[2]/i/i/span/div/div[1]/label/span"""
+	PAPR_xpath = """//*[@id="respclass-tr"]/td[2]/i/i/span/div/div[2]/label/span"""
+
+	Submit_xpath = """//*[@id="questiontable"]/tbody/tr[22]/td/table/tbody/tr/td/button"""
+
+
+
+
 	# Answer the question for Fit Test Result. Just a note, if you're looking for the xpath of something
 	#	like the "Failed" button on the survey; Ctrl+F the Inspect Element and it will be the 2nd of 
 	#	the two viable elements in the HTML script. Chrome will highlight the word itself inside the
 	#	survey button, not the whole button -- when you select it in the HTML.
 	
 	# Small
-	if 1:
-	the_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[1]/label/span"""
-	driver.find_element("xpath",the_xpath).click()
+	if 0:	
+		driver.find_element("xpath",Small_xpath).click()
 
 	# Failed
-	if 1: 
-	the_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[2]/label/span"""
-	driver.find_element("xpath",the_xpath).click()
+	if 0: 
+		driver.find_element("xpath",Failed_xpath).click()
 
 	# Med/Reg
 	if 1: 
-	the_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[3]/label/span"""
-	driver.find_element("xpath",the_xpath).click()
-
+		driver.find_element("xpath",MedReg_xpath).click()
 
 	# Answer: Was the respirator test successful?
 	
 	# Yes
-	if 1: 
-		the_xpath = """//*[@id="fittestpassed-tr"]/td[2]/i/span/div/div[1]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
+	if 1: 	
+		driver.find_element("xpath",Yes_xpath).click()
 	
 	# No
-	if 1: 
-		the_xpath = """//*[@id="fittestpassed-tr"]/td[2]/i/span/div/div[2]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
+	if 0: 
+		driver.find_element("xpath",No_xpath).click()
 
 	# Answer (if you just said "no"): What was the failed reason?
 
 	# Facial hair
-	if 1: 
-		the_xpath = """//*[@id="fittestfailreason-tr"]/td[2]/i/span/div/div[1]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
+	if 0: 
+		driver.find_element("xpath",FacialHair_xpath).click()
 	# Facial Size, Shape, or Structure
-	if 1: 
-		the_xpath = """//*[@id="fittestfailreason-tr"]/td[2]/i/span/div/div[2]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
+	if 0: 
+		driver.find_element("xpath",FacialSize_xpath).click()
 	
 	# Answer: Respirator Model?	
 
 	# 3M 1860S
-	if 1: 
-		the_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[3]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
+	if 0: 
+		driver.find_element("xpath",Mask1860S_xpath).click()
 	# 3M 1860
 	if 1: 
-		the_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[3]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
+		driver.find_element("xpath",Mask1860_xpath).click()
 	# 3M 1870+
-	if 1: 
-		the_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[9]/label/span"""
-		driver.find_element("xpath",the_xpath).click()
-		driver.find_element("xpath",the_xpath).click()
+	if 0: 
+		driver.find_element("xpath",Mask1870Plus_xpath).click()
 
 	# Halyard Fluidshield #46827 S
-		if 1: 
-			the_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[20]/label/span"""
-			driver.find_element("xpath",the_xpath).click()
+	if 0: 
+		driver.find_element("xpath",HalyardSmall_xpath).click()
 
 	# Halyard Fluidshield 46727 R
-		if 1: 
-			the_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[22]/label/span"""
-			driver.find_element("xpath",the_xpath).click()
+	if 0: 
+		driver.find_element("xpath",HalyardRegular_xpath).click()
 	
-	# blah
+	# Answer: Will we choose N95 or PAPR? Choose N95 for a Fit Test pass, and choose PAPR if failed all options.
+	# N95
 		if 1: 
-			the_xpath = """
-			driver.find_element("xpath",the_xpath).click()
-	# blah
-		if 1: 
-			the_xpath = """
-			driver.find_element("xpath",the_xpath).click()
-
-
-
-
-
-
-
-
-
-
+			driver.find_element("xpath",N95_xpath).click()
+	# PAPR
+		if 0: 
+			driver.find_element("xpath",PAPR_xpath).click()
 
 	# Hit submit
+	if 0:
+		driver.find_element("xpath",Submit_xpath).click()
 
 	# End program
+	unused_var = input("Program done. Press ENTER to close.\n")
 	unused_var = input("Program done. Press ENTER to close.\n")
 	print("Closing...\n")
 
