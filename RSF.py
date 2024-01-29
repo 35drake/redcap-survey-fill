@@ -65,7 +65,7 @@ def spam_by_x(driver,xpath):
 			break
 
 
-import time # For a pause with time.sleep()
+import time # For checking time elapsed with time.time() and a possible a pause with time.sleep()
 import getpass # For a hidden password input through getpass.getpass()
 
 # Import tools that I don't understand:
@@ -94,11 +94,16 @@ for count in range(1):
 	# Load the webpage
 	driver.get(url)
 
+
+	# Run the login function (defined in this program)
 	login(driver)
 
-	# Show that it's reached the page properly:
-	# print("Page URL:", driver.current_url) 
-	# print("\n\n")
+	# Print the homepage title and make sure you've reached the homepage
+	while 1:
+		print(driver.title)
+		print("\n")
+		if (driver.title == "REDCap"):
+			break
 		
 	# Wait until the text input field loads, then type in the employee's ID number:
 	try:
@@ -140,11 +145,10 @@ for count in range(1):
 	try:
 		driver.find_element("name","fittestdate").clear()
 		# driver.find_element("name","fittestdate").send_keys(input("Fit Test Date (MM-DD-YYYY): "))	
-		driver.find_element("name","fittestdate").send_keys("01-01-2024")	
+		driver.find_element("name","fittestdate").send_keys("01-29-2024")	
 	except WebDriverException:
 		time.sleep(1)
 
-	# actions = ActionChains(driver)
 
 	# The next step is loading up all the xpath variables. These may change over time but are unlikely to:
 	Small_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[1]/label/span"""
@@ -155,7 +159,7 @@ for count in range(1):
 	FacialHair_xpath = """//*[@id="fittestfailreason-tr"]/td[2]/i/span/div/div[1]/label/span"""
 	FacialSize_xpath = """//*[@id="fittestfailreason-tr"]/td[2]/i/span/div/div[2]/label/span"""
 	Mask1860S_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[3]/label/span"""
-	Mask1860_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[3]/label/span"""
+	Mask1860R_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[5]/label/span"""
 	Mask1870Plus_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[9]/label/span"""
 	HalyardSmall_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[20]/label/span"""
 	HalyardRegular_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[22]/label/span"""
@@ -163,79 +167,86 @@ for count in range(1):
 	PAPR_xpath = """//*[@id="respclass-tr"]/td[2]/i/i/span/div/div[2]/label/span"""
 	Submit_xpath = """//*[@id="questiontable"]/tbody/tr[22]/td/table/tbody/tr/td/button"""
 
+	# Click the correct boxes depending on what fit test result is being input right now:
 
-
-	# Answer the question for Fit Test Result. Just a note, if you're looking for the xpath of something
-	#	like the "Failed" button on the survey; Ctrl+F the Inspect Element and it will be the 2nd of 
-	#	the two viable elements in the HTML script. Chrome will highlight the word itself inside the
-	#	survey button, not the whole button -- when you select it in the HTML.
+	# A passed 1860S Fit test:
+	if 0:
+		spam_by_x(driver,Small_xpath)
+		spam_by_x(driver,Yes_xpath)
+		spam_by_x(driver,Mask1860S_xpath)
+		spam_by_x(driver,N95_xpath)
 	
-	# Small
+	# A passed 1860R Fit test:
+	if 0:	
+		spam_by_x(driver,MedReg_xpath)
+		spam_by_x(driver,Yes_xpath)
+		spam_by_x(driver,Mask1860R_xpath)
+		spam_by_x(driver,N95_xpath)
+
+	# A passed 1870+ Fit test:
+	if 1:	
+		spam_by_x(driver,MedReg_xpath)
+		spam_by_x(driver,Yes_xpath)
+		spam_by_x(driver,Mask1870Plus_xpath)
+		spam_by_x(driver,N95_xpath)
+
+	# A passed Halyard Small Fit test:
 	if 0:	
 		spam_by_x(driver,Small_xpath)
+		spam_by_x(driver,Yes_xpath)
+		spam_by_x(driver,HalyardSmall_xpath)
+		spam_by_x(driver,N95_xpath)
 
-	# Failed
+	# A passed Halyard Regular Fit test:
+	if 0:	
+		spam_by_x(driver,MedReg_xpath)
+		spam_by_x(driver,Yes_xpath)
+		spam_by_x(driver,HalyardRegular_xpath)
+		spam_by_x(driver,N95_xpath)		
+
+	# A completely failed Fit Test due to facial size or shape ("Failed N95 options")
 	if 0: 
 		spam_by_x(driver,Failed_xpath)
-
-	# Med/Reg
-	if 1: 
-		spam_by_x(driver,MedReg_xpath)
-
-	# Answer: Was the respirator test successful?
-	
-	# Yes
-	if 1: 	
-		spam_by_x(driver,Yes_xpath)
-	
-	# No
-	if 0: 
-		spam_by_x(driver,No_xpath)
-
-	# Answer (if you just said "no"): What was the failed reason?
-
-	# Facial hair
-	if 0: 
-		spam_by_x(driver,FacialHair_xpath)
-	# Facial Size, Shape, or Structure
-	if 0: 
+		spam_by_x(driver,No_xpath)		
 		spam_by_x(driver,FacialSize_xpath)
-	
-	# Answer: Respirator Model?	
-
-	# 3M 1860S
-	if 0: 
-		spam_by_x(driver,Mask1860S_xpath)
-	# 3M 1860
-	if 1: 
-		spam_by_x(driver,Mask1860_xpath)
-	# 3M 1870+
-	if 0: 
-		spam_by_x(driver,Mask1870Plus_xpath)
-
-	# Halyard Fluidshield #46827 S
-	if 0: 
-		spam_by_x(driver,HalyardSmall_xpath)
-
-	# Halyard Fluidshield 46727 R
-	if 0: 
-		spam_by_x(driver,HalyardRegular_xpath)
-	
-	# Answer: Will we choose N95 or PAPR? Choose N95 for a Fit Test pass, and choose PAPR if failed all options.
-	# N95
-	if 1: 
-		spam_by_x(driver,N95_xpath)
-	# PAPR
-	if 0: 
 		spam_by_x(driver,PAPR_xpath)
 
-	# Hit submit
-	if 0:
+	# A completely failed Fit Test due to facial hair
+	if 0: 
+		spam_by_x(driver,Failed_xpath)
+		spam_by_x(driver,No_xpath)		
+		spam_by_x(driver,FacialHair_xpath)
+		spam_by_x(driver,PAPR_xpath)
+
+
+	# Submit the completed form (make sure this is OFF if you're bug testing)
+	if 1:
 		spam_by_x(driver,Submit_xpath)
 
+		# Confirm that the form was submitted by checking that you're back to the homepage now
+		time_of_sumbission = time.time()
+		while 1:
+			if driver.title == "REDCap":
+				print("Form submittal confirmed.\n")
+				break
+			# Check if 30 seconds have passed since submittal but the homepage still hasn't loaded
+			if time.time() - a > 30:
+				exit("Error: cannot confirm that form was submitted") 
+		print("Form submitted and program will end now.\n")
 	# End program
 	unused_var = input("Program done. Press ENTER to close.\n")
 	print("Closing...\n")
+
+
+
+# What to do next:
+# What happens when the user ID put in is incomplete or has no results?
+# Make the spreadsheet work with this program. NOTE: a passing fit test could require multiple forms filled out!
+# Make sure that the date is ripped from the SS
+# Hy just have the program scrub the user ID and date to make sure they're of the right format
+# If you have multiple masks or multiple employee forms to put in, have the Chrome tab open only once and not close
+#	till it's done. That way, you can carry out all the RSF operations in a separate desktop while you do
+#	other computer work yourself, without having the RSF new Chrome window keep popping up in your face.
 
 
 
