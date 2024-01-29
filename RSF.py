@@ -80,6 +80,20 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 
 
+
+# Open the spreadsheet file and edit it so all new rows that the user recently added now say "Not yet entered"
+#	in column L.
+# Next, put all the data from those new rows into an array of data that must be put into forms. Note: if an employee
+#	passes a fit test with only 1 mask, or completely fails the fit test, they will only have one string of data
+#	and therefore only have 1 RedCap form submitted. BUT, if an employee passes multiple masks, they'll have
+#	MULTIPLE strings of data and multiple forms submitted. So you'll have to process the Excel data instead
+#	of just directly importing the grid.
+
+# Drake, put Excel operations here
+
+
+
+
 # Load a headless browser and set the URL of the Redcap survey:
 options = webdriver.ChromeOptions() ; options.headless = True ; url = "https://redcap.partners.org/redcap/plugins/survey_token/survey_token_login.php?pid=18168&hash=988968e7-e9d0-4581-9c1e-0ddd3f5b8036"
 
@@ -220,19 +234,21 @@ for count in range(1):
 
 
 	# Submit the completed form (make sure this is OFF if you're bug testing)
-	if 1:
+	if 0: # set this to 1 if you're running the program for real
 		spam_by_x(driver,Submit_xpath)
-
 		# Confirm that the form was submitted by checking that you're back to the homepage now
-		time_of_sumbission = time.time()
+		time_of_submission = time.time()
 		while 1:
 			if driver.title == "REDCap":
-				print("Form submittal confirmed.\n")
+				print("Form submittal confirmed (for real).\n")
 				break
-			# Check if 30 seconds have passed since submittal but the homepage still hasn't loaded
-			if time.time() - a > 30:
+			# Check if 45 seconds have passed since submittal but the homepage still hasn't loaded
+			if time.time() - time_of_submission > 45:
 				exit("Error: cannot confirm that form was submitted") 
-		print("Form submitted and program will end now.\n")
+	else:
+		unused_var = input("Since we are in bug testing mode, the form will not really be submitted.\nClose the Selenium browser and press ENTER in this terminal to continue.\n(It may take a moment)\n")
+		print("Form submittal confirmed (pretend).\n")
+
 	# End program
 	unused_var = input("Program done. Press ENTER to close.\n")
 	print("Closing...\n")
