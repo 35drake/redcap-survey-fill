@@ -33,8 +33,8 @@ def login(driver):
 	# print("Page Title:", driver.title)
 	# print("\n\n")
 
-# Spam a button until it is clickable. Then, keep spamming it until it is considered no longer
-#	clickable. Trust me, both steps are necessary for some of these buttons.
+# Spam a button (identified via id) until it is clickable. Then, keep spamming it until it is 
+#	considered no longer clickable. Trust me, both steps are necessary for some of these buttons.
 def spam_sandwich(driver,id):
 	while 1:
 		try:
@@ -45,6 +45,22 @@ def spam_sandwich(driver,id):
 	while 1:
 		try:
     			driver.find_element("id",id).click() # click the button
+		except WebDriverException:
+			break
+
+# The same as the spam_sandwich() function except it clicks a clickable element (identified via xpath) 
+#	that is not necessarily a button. Also, once the button is clicked, the function ends instead of 
+#	waiting until it is no longer clickable.
+def spam_by_x(driver,xpath):
+	while 1:
+		try:
+			driver.find_element("xpath",xpath).click() # click the button
+			break
+		except WebDriverException:
+			pass
+	while 0:
+		try:
+    			driver.find_element("xpath",xpath).click() # click the button
 		except WebDriverException:
 			break
 
@@ -71,8 +87,8 @@ options = webdriver.ChromeOptions() ; options.headless = True ; url = "https://r
 # I used to use the following two lines, but they only work on some computers (perhaps a problem with Chrome versions?)
 #from webdriver_manager.chrome import ChromeDriverManager
 #with webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options) as driver:
-# Now, instead of the above two lines, I use the below two lines (the "if 1:" is to keep indentation valid)
-if 1:
+# Now, instead of the above two lines, I use the below two lines (the "if 1:" is to keep indentation valid). See here for what led me to this solution: https://stackoverflow.com/questions/76553813/messageunable-to-obtain-chromedriver-using-selenium-manager
+for count in range(1):
 	driver = webdriver.Chrome()
 	
 	# Load the webpage
@@ -123,7 +139,8 @@ if 1:
 	#	loading at all, but I made the program do it just in case.) Delete the autopopulated response first.
 	try:
 		driver.find_element("name","fittestdate").clear()
-		driver.find_element("name","fittestdate").send_keys(input("Fit Test Date (MM-DD-YYYY): "))	
+		# driver.find_element("name","fittestdate").send_keys(input("Fit Test Date (MM-DD-YYYY): "))	
+		driver.find_element("name","fittestdate").send_keys("01-01-2024")	
 	except WebDriverException:
 		time.sleep(1)
 
@@ -144,9 +161,7 @@ if 1:
 	HalyardRegular_xpath = """//*[@id="model-tr"]/td[2]/i/i/span/div/div[22]/label/span"""
 	N95_xpath = """//*[@id="respclass-tr"]/td[2]/i/i/span/div/div[1]/label/span"""
 	PAPR_xpath = """//*[@id="respclass-tr"]/td[2]/i/i/span/div/div[2]/label/span"""
-
 	Submit_xpath = """//*[@id="questiontable"]/tbody/tr[22]/td/table/tbody/tr/td/button"""
-
 
 
 
@@ -157,75 +172,70 @@ if 1:
 	
 	# Small
 	if 0:	
-		driver.find_element("xpath",Small_xpath).click()
+		spam_by_x(driver,Small_xpath)
 
 	# Failed
 	if 0: 
-		driver.find_element("xpath",Failed_xpath).click()
+		spam_by_x(driver,Failed_xpath)
 
 	# Med/Reg
 	if 1: 
-		driver.find_element("xpath",MedReg_xpath).click()
+		spam_by_x(driver,MedReg_xpath)
 
 	# Answer: Was the respirator test successful?
 	
 	# Yes
 	if 1: 	
-		driver.find_element("xpath",Yes_xpath).click()
+		spam_by_x(driver,Yes_xpath)
 	
 	# No
 	if 0: 
-		driver.find_element("xpath",No_xpath).click()
+		spam_by_x(driver,No_xpath)
 
 	# Answer (if you just said "no"): What was the failed reason?
 
 	# Facial hair
 	if 0: 
-		driver.find_element("xpath",FacialHair_xpath).click()
+		spam_by_x(driver,FacialHair_xpath)
 	# Facial Size, Shape, or Structure
 	if 0: 
-		driver.find_element("xpath",FacialSize_xpath).click()
+		spam_by_x(driver,FacialSize_xpath)
 	
 	# Answer: Respirator Model?	
 
 	# 3M 1860S
 	if 0: 
-		driver.find_element("xpath",Mask1860S_xpath).click()
+		spam_by_x(driver,Mask1860S_xpath)
 	# 3M 1860
 	if 1: 
-		driver.find_element("xpath",Mask1860_xpath).click()
+		spam_by_x(driver,Mask1860_xpath)
 	# 3M 1870+
 	if 0: 
-		driver.find_element("xpath",Mask1870Plus_xpath).click()
+		spam_by_x(driver,Mask1870Plus_xpath)
 
 	# Halyard Fluidshield #46827 S
 	if 0: 
-		driver.find_element("xpath",HalyardSmall_xpath).click()
+		spam_by_x(driver,HalyardSmall_xpath)
 
 	# Halyard Fluidshield 46727 R
 	if 0: 
-		driver.find_element("xpath",HalyardRegular_xpath).click()
+		spam_by_x(driver,HalyardRegular_xpath)
 	
 	# Answer: Will we choose N95 or PAPR? Choose N95 for a Fit Test pass, and choose PAPR if failed all options.
 	# N95
-		if 1: 
-			driver.find_element("xpath",N95_xpath).click()
+	if 1: 
+		spam_by_x(driver,N95_xpath)
 	# PAPR
-		if 0: 
-			driver.find_element("xpath",PAPR_xpath).click()
+	if 0: 
+		spam_by_x(driver,PAPR_xpath)
 
 	# Hit submit
 	if 0:
-		driver.find_element("xpath",Submit_xpath).click()
+		spam_by_x(driver,Submit_xpath)
 
 	# End program
 	unused_var = input("Program done. Press ENTER to close.\n")
-	unused_var = input("Program done. Press ENTER to close.\n")
 	print("Closing...\n")
 
-
-#driver.find_element("id","opt-model_MM_2200")
-# ac = ActionChains(driver)
-# ac.move_to_element(elem).move_by_offset(x_offset, y_offset).click().perform()
 
 
