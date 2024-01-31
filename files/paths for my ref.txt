@@ -1,2 +1,0 @@
-Spreadsheet_path: C:/Users/DS001/OneDrive - Mass General Brigham/ONEDRIVE DOCUMENTS/Shared/N95 Automated Redcap Spreadsheet.xlsx
-Spreadsheet_path: C:/Users/DS001/Desktop/test-SS.xlsx
