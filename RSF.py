@@ -101,8 +101,21 @@ def spam_by_x(driver,xpath):
 # Drake, put Excel operations here(?)
 
 # This function opens up a Chrome tab and attempts to submit a survey with the parameters as the survey options
-def auto_browser(username, password, mask_or_failure_number, submitting_for_real):
+def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure_number, submitting_for_real):
 	my_return_value = "NOT SUBMITTED YET" # This will be returned at the end of the auto_browser() function to tell you if the form submitted or not
+	
+	# Make sure that the employee ID number is a 9-digit number as expected
+	employee_id_as_string = str(employee_id)
+	if len(employee_id_as_string)!=9:
+		print("Error, employee ID is not 9 characters long.",employee_id_as_string,"\n")
+		print(len(employee_id_as_string))
+		return(my_return_value)
+	if employee_id_as_string.isdigit == False:
+		print("Error, employee ID is not all digits.",employee_id_as_string,"\n")
+		for a_char in employee_id_as_string:
+			print(a_char)
+			print("Order:",ord(a_char))
+		return(my_return_value)
 	
 	# Make the browser headless and set the URL of the Redcap survey:
 	options = webdriver.ChromeOptions() ; options.headless = True ; url = "https://redcap.partners.org/redcap/plugins/survey_token/survey_token_login.php?pid=18168&hash=988968e7-e9d0-4581-9c1e-0ddd3f5b8036"
@@ -130,7 +143,8 @@ def auto_browser(username, password, mask_or_failure_number, submitting_for_real
 
 	# Wait until the text input field loads, then type in the employee's ID number:
 	try:
-		driver.find_element("id","search_field").send_keys("100634497")
+		# driver.find_element("id","search_field").send_keys("100634497")
+		driver.find_element("id","search_field").send_keys(employee_id_as_string)
 	except WebDriverException:
 		time.sleep(1)
 
@@ -163,12 +177,13 @@ def auto_browser(username, password, mask_or_failure_number, submitting_for_real
 	print("The website autopopulated the Last Name as:",driver.find_element("name","last_name").get_attribute("value"),"\n")
 	print("The website autopopulated the First Name ID as:",driver.find_element("name","first_name").get_attribute("value"),"\n")
 	
-	# Type in the employee's ID number (I don't think there's a need to wait for 
+	# Type in the fit test date (I don't think there's a need to wait for 
 	#	loading at all, but I made the program do it just in case.) Delete the autopopulated response first.
 	try:
 		driver.find_element("name","fittestdate").clear()
-		# driver.find_element("name","fittestdate").send_keys(input("Fit Test Date (MM-DD-YYYY): "))	
-		driver.find_element("name","fittestdate").send_keys("01-29-2024")	
+		# driver.find_element("name","fittestdate").send_keys(input("Fit Test Date (MM-DD-YYYY): "))
+		# driver.find_element("name","fittestdate").send_keys("01-29-2024")	
+		driver.find_element("name","fittestdate").send_keys(fit_test_date.replace("/","-")) #make sure to replace Excel's native date slashes with date hyphens	
 	except WebDriverException:
 		time.sleep(1)
 
@@ -334,16 +349,59 @@ for count in range(5,SS_rows):
 # Col 11 is RSF Completion Info 	(program will READ AND WRITE this)
 # Col 12 is RSF Last Time Accessed 	(program will WRITE this)
 
+
+
 # Drake, now for each row of my_data[5:SS_rows], use the item of my_data[5:SS_rows][11] to determine if it needs operation,
 #	and if so use the items of my_data[5:SS_rows][0:11] to send the survey with auto_browser(); 
 #	then write into items my_data[5:SS_rows][11:13] detailling what happened.
+
+
+# Go down column 11 and if any items are empty, change them to "Not yet entered"
+for my_row in range(5,SS_rows):
+	try: # if the cell's item gives an error at accessing its first character, then it must be a "nan" object (empty cell)
+		unused_var = my_data[my_row][11][0]
+	except:
+		my_data[my_row][11] = "Not yet entered" #NOTE: this did not overwrite the spreadsheet's empty column 11 cell yet. It just changed our own item in my_data[]
+
+for my_row in range(5,SS_rows):
+	if my_data[my_row][11][0:3] == "Not":
+		#do ops here, and EVERY TIME you send in a survey, you must update the real SS. That way if the program quits halfway through unexpectedly, the SS will still be updated (ie will say "Only 1/3 surveys sent")
+		fit_test_date = my_data[my_row][0]
+		employee_id = my_data[my_row][2]
+		# print(fit_test_date)
+		# print(employee_id)
+
+		for current_col in range(4,11): #go through the mask/failure cells to see if there's an x. If there is, then pass the column number as the auto_browser() argument for the mask/failure option and send a survey
+			if my_data[my_row][current_col] == "x" or my_data[my_row][current_col] == "X":
+				
+
+				# here i must overwrite whatever's in Col 12 (access date) in the REAL Excel spreadsheet's cell, with the current date
+				
+				my_return_value = auto_browser(my_username, my_password, employee_id, fit_test_date, current_col, 0)		
+				
+				# Drake, the program's almost complete. You only have to update column 12 in the REAL spreadsheet (see above), then you
+				# 	have to update column 11 as well depending on auto_browser()'s success (aka its return values). Note: column 11
+				# 	no longer needs to be read; it only needs to be written to now. Because the row we're operating on is a row 
+				# 	that hasn't been operated on before (whether successfully or not), because I programmed the program to ignore those.
+
+
+	elif my_data[my_row][11][0:3] == "Onl": # For this employee, there was some error before that prevented the program from finishing this person's surveys, so I'm gonna leave it undone by the program
+		pass
+	elif my_data[my_row][11][0:3] == "All": # For this employee, all their surveys were put in successfully so nothing needs to be done now.
+		pass
+	else: # An unexpected value was found in this employee's column 11
+		exit("\nError: an item in the \"Redcap Status\" column is not blank nor was written in (at least, correctly) by \nthe program. Make sure that no one's manually written something in there.\n")
+
+	
+		
+exit()
 
 
 mask_or_failure_number = 9 # Can be equal to 4,5,6,7,8. Refers to the 1860S, 1860R, 1870+, Halyard S, Halyard R. Can be also equal to 9 or 10. Refers to Fail-By-Face-Shape and Fail-By-Facial-Hair. 
 submitting_for_real = 0 # Set to 0 if you're just debugging and don't wanna actually submit RedCap forms
 
 # Make sure the numeric arguments are vals and not strings
-my_return_value = auto_browser(my_username, my_password, mask_or_failure_number, submitting_for_real)
+# my_return_value = auto_browser(my_username, my_password, employee_id, fit_test_date, mask_or_failure_number, submitting_for_real)
 
 print("Return value is: ", my_return_value)
 
