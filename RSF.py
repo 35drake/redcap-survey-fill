@@ -1,15 +1,25 @@
+# Drake Sorkhab, February 2024
+
+# SUMMARY AND NOTES
 # This is a program that helps you submit several Redcap forms. It's useful when the Redcap
 #	website loads very slowly, because you can have the program transfer spreadsheet
 #	data into many Redcap submissions; you won't have to wait for the page to slowly load
 #	each time, because the program will run and do the waiting for you.
-# I made this as a way to learn Selenium. See a guide here: 
+# Note that this program is currently set up to submit a specific RedCap form; you'll have to 
+#	alter the source code and sample spreadsheet to make it work with other forms.
+#	If RedCap updates or changes the format of its login page or survey pages, even more 
+#	of the program will have to be changed.
+# I learned the basics of Selenium while creating this program. See a guide here: 
 #	https://www.scaler.com/topics/selenium-tutorial/form-input-in-selenium/
 # Make sure Selenium is installed and up-to-date (use pip, ie with "pip install --upgrade selenium").
-# The most important function here is driver.find_element(attribute,name). It's how you locate
+#	Several other libraries are needed too (see the imported libraries in the next section).
+# The most important Selenium function here is driver.find_element(attribute,name). It's how you locate
 #	HTML elements for the program to work with. Use Inspect Element on a webpage to find
-#	the attribute of your element (i.e. "id" or "class" or "style") and the actual 
+#	the attribute of your element (i.e. "id" or "xpath") and the actual 
 #	name/value of its attribute (i.e. an element's id could be "username" if it's the
-#	username text entry box on the website).
+#	username text entry box on the website). I started by using id for all survey buttons
+#	and interactable objects, but some buttons were programmed into RedCap strangely
+#	and without an id, so I had to find them by xpath.
 # Debugging reminder: To debug a program in the python terminal, execute the program with
 #	"python -m pdb RSF.py". You'll type in "n" every time you want the next line to be
 #	executed, and in the middle of program execution you can send commands like a new line
@@ -17,41 +27,51 @@
 #	handling single-letter variable names, so during debug don't send a command like 
 #	"a = driver.find_element("id","blah").
 
-import pandas # For manipulating Excel data
-# import numpy ...seems like I don't need this because pandas will have numpy type support builtin
-import datetime # For converting Excel dates into strings and getting today's date
+# PROGRAM OUTLINE
+# See the sample spreadsheet to understand the goals of this program. For every "x" that an employee has in a cell,
+#	a RedCap form must be submitted. Note that column "L" of the spreadsheet contains data, written by the program,
+#	that tells you if this employee's data has already been submitted or attempted to be submitted. The program 
+#	will only attempt to enter new data that hasn't been done before. 
+# Using auto_browser(), the necessary forms are submitted. Each time a form is submitted, column "L" for that employee's 
+#	row will be updated as proof of success. The "L" cell will turn green when all forms are done for that person.
+#	If there's a problem and all forms don't get in successfully, that employee's "L" cell will stay yellow.
 
+
+import pandas # for reading Excel data
+import xlwings # for writing to Excel sheet (change one cell)
+import datetime # For converting Excel dates into strings and getting today's date
 import time # For checking time elapsed with time.time() and a possible a pause with time.sleep()
 import getpass # For a hidden password input through getpass.getpass()
+
+# Basically this is used to tell us when HTML buttons aren't clickable
+from selenium.common.exceptions import WebDriverException
 
 # Import tools that I don't understand:
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 
-# Basically this is used to tell us when HTML buttons aren't clickable
-from selenium.common.exceptions import WebDriverException
-
 # So I can navigate the webpage with tab and space keys (no longer used though):
-#from selenium.webdriver.common.keys import Keys
-#from selenium.webdriver.common.action_chains import ActionChains
+#	from selenium.webdriver.common.keys import Keys
+#	from selenium.webdriver.common.action_chains import ActionChains
 
-# To ask the user for a hidden password
-import getpass
+# Seems like I don't need this because pandas will have numpy type support builtin
+#	import numpy
+
+# This takes the indices for a matrix (zero-based), and converts it to the corresponding Excel cell index (ie 3,8 --> "I4")
+def indices_to_cell(row,col):
+	return(chr(65+col) + str(row+1))
+
+# If an Excel file is open (GUI), then pandas may not be able to read from it. This function makes sure it's closed.
+def close_Excel(Excel_file_path):
+	my_wb = xlwings.Book(Excel_file_path)
+	my_wb.close()
 
 # This will do the login portion of the program
 def login(driver,username,password):
-#	if 0:
-#		# Log in by taking credentials, then pressing the "LOG IN" button
-#		driver.find_element("id","username").send_keys(input("Username: "))
-#		driver.find_element("id","password").send_keys(getpass.getpass("Password: "))
-#	else:
-#		driver.find_element("id","username").send_keys("ds001")
-#		driver.find_element("id","password").send_keys("fakePassword")
-
-
 	driver.find_element("id","username").send_keys(username)
 	driver.find_element("id","password").send_keys(password)
 
+	# Press the login button
 	login_button = driver.find_element("id","login_btn")
 	login_button.click()  # Select the button by clicking on it
 
@@ -90,17 +110,14 @@ def spam_by_x(driver,xpath):
 		except WebDriverException:
 			break
 
-# Open the spreadsheet file and edit it so all new rows that the user recently added now say "Not yet entered"
-#	in column L.
-# Next, put all the data from those new rows into an array of data that must be put into forms. Note: if an employee
-#	passes a fit test with only 1 mask, or completely fails the fit test, they will only have one string of data
-#	and therefore only have 1 RedCap form submitted. BUT, if an employee passes multiple masks, they'll have
-#	MULTIPLE strings of data and multiple forms submitted. So you'll have to process the Excel data instead
-#	of just directly importing the grid.
-
-# Drake, put Excel operations here(?)
-
 # This function opens up a Chrome tab and attempts to submit a survey with the parameters as the survey options
+# VARIABLES EXPLAINED: 
+#	"mask_or_failure_number" can be equal to 4,5,6,7,8. Refers to the 1860S, 1860R, 1870+, Halyard S, Halyard R. Can be also equal to 9 or 10. Refers to Fail-By-Face-Shape and Fail-By-Facial-Hair. 
+# 	"submitting_for_real" is set to 0 if you're just debugging and don't wanna actually submit RedCap forms. Set it to 1 if you want the forms to actually submit.
+#	Make sure the numeric arguments are vals and not strings.
+#	The function auto_browser will always return one of four strings: "NOT SUBMITTED YET", "SUBMISSION FAILED", "SUBMISSION WORKED", "SUBMISSION WORKED (PRETEND)".
+#	The first string is the default, the second is a failure to load or submit the form, the third is a real successful submission, and the fourth reveals that the form loaded correctly and was almost sent,
+#	but the function was called with "submitting_for_real" equal to 0, so the submit button wasn't actually pressed at the end.
 def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure_number, submitting_for_real):
 	my_return_value = "NOT SUBMITTED YET" # This will be returned at the end of the auto_browser() function to tell you if the form submitted or not
 	
@@ -120,11 +137,11 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 	# Make the browser headless and set the URL of the Redcap survey:
 	options = webdriver.ChromeOptions() ; options.headless = True ; url = "https://redcap.partners.org/redcap/plugins/survey_token/survey_token_login.php?pid=18168&hash=988968e7-e9d0-4581-9c1e-0ddd3f5b8036"
 
+	# Initialise the driver used by Selenium
 	driver = webdriver.Chrome()
 	
 	# Load the webpage
 	driver.get(url)
-
 
 	# Run the login function (defined in this program)
 	login(driver, username, password)
@@ -187,7 +204,6 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 	except WebDriverException:
 		time.sleep(1)
 
-
 	# The next step is loading up all the xpath variables. These may change over time but are unlikely to:
 	Small_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[1]/label/span"""
 	Failed_xpath = """//*[@id="fitresult-tr"]/td[2]/i/i/span/div/div[2]/label/span"""
@@ -204,6 +220,7 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 	N95_xpath = """//*[@id="respclass-tr"]/td[2]/i/i/span/div/div[1]/label/span"""
 	PAPR_xpath = """//*[@id="respclass-tr"]/td[2]/i/i/span/div/div[2]/label/span"""
 	Submit_xpath = """//*[@id="questiontable"]/tbody/tr[22]/td/table/tbody/tr/td/button"""
+
 
 	# Click the correct boxes depending on what fit test result is being input right now:
 
@@ -287,7 +304,6 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 	print("Closing...\n")
 	return(my_return_value)
 
-
 # Make a list of the settings from the settings.txt file
 settings_file = open("files/settings.txt","r")
 settings = []
@@ -315,8 +331,11 @@ my_password = settings[2]
 
 # Ask for the password if it's not in the settings (left blank in the settings.txt file)
 if my_password == "":
-	my_password = getpass.getpass("Your password is not stored in your settings. Please type in your password now (it will not be stored):")
-	
+	my_password = getpass.getpass("Your password is not stored in your settings. Please type in your password now (it will not be stored): ")
+
+# If the Excel file is already open (and it's stored in OneDrive), pandas will fail to open it. This will close the Excel file if it is currently open.
+close_Excel(SS_path)
+
 # Move the contents of the spreadsheet into the my_data NumPy array
 try:
 	my_data = pandas.read_excel(SS_path, header = None) # "No header" means that the first row is still used. We don't actually need the first row of the spreadsheet, but counting it makes things less confusing for me
@@ -349,8 +368,6 @@ for count in range(5,SS_rows):
 # Col 11 is RSF Completion Info 	(program will READ AND WRITE this)
 # Col 12 is RSF Last Time Accessed 	(program will WRITE this)
 
-
-
 # Drake, now for each row of my_data[5:SS_rows], use the item of my_data[5:SS_rows][11] to determine if it needs operation,
 #	and if so use the items of my_data[5:SS_rows][0:11] to send the survey with auto_browser(); 
 #	then write into items my_data[5:SS_rows][11:13] detailling what happened.
@@ -363,28 +380,56 @@ for my_row in range(5,SS_rows):
 	except:
 		my_data[my_row][11] = "Not yet entered" #NOTE: this did not overwrite the spreadsheet's empty column 11 cell yet. It just changed our own item in my_data[]
 
+# Pandas operations are done now (it just had to read the Excel file once). Next are xlwings operations (basically just WRITING 
+#	to the Excel file). Let's open the file with Excel file with xlwings (note this will actually open it in the GUI too).
+my_wb = xlwings.Book(SS_path)
+my_ws = my_wb.sheets("Sheet1")
+
+# Go through all the employee data in the spreadsheet. For each employee not put in yet: send their surveys and update their statuts on the spreadsheet.
 for my_row in range(5,SS_rows):
 	if my_data[my_row][11][0:3] == "Not":
-		#do ops here, and EVERY TIME you send in a survey, you must update the real SS. That way if the program quits halfway through unexpectedly, the SS will still be updated (ie will say "Only 1/3 surveys sent")
+		# Operations on this employee are done now. EVERY TIME a survey is sent, the real Excel file is updated with their status. That way if the program quits halfway through unexpectedly, the SS will still be updated (ie will say "Only 1/3 surveys sent")
 		fit_test_date = my_data[my_row][0]
 		employee_id = my_data[my_row][2]
-		# print(fit_test_date)
-		# print(employee_id)
 
-		for current_col in range(4,11): #go through the mask/failure cells to see if there's an x. If there is, then pass the column number as the auto_browser() argument for the mask/failure option and send a survey
+		# First of all, count how many x's this employee has. AKA how many surveys must be sent for them total. That way, with column 11, we can track the progress of how many are surveys done and how many remain.
+		x_total = 0
+		for current_col in range(4,11): #go through each mask/failure cell to see if there's an x.
 			if my_data[my_row][current_col] == "x" or my_data[my_row][current_col] == "X":
-				
+				x_total = x_total + 1
 
-				# here i must overwrite whatever's in Col 12 (access date) in the REAL Excel spreadsheet's cell, with the current date
+		# We'll also have to count how many x's have been successfully entered into survey so far. Note that this will hopefully come to equal the same value as x_total. Anyway, let's initialize that variable:
+		x_done = 0
+	
+		# Same thing as previously, but instead of just counting the x's, we're gonna send a survey for each x and note the number of surveys sent successfully in column 11
+		for current_col in range(4,11): # Note that when their is an x, we pass the column number as the auto_browser() argument for the mask/failure option to send the appropriate survey response
+			if my_data[my_row][current_col] == "x" or my_data[my_row][current_col] == "X":
+
+				# I overwrite whatever's in Col 12 (access date) in the REAL Excel spreadsheet's cell, with the current date. This is just for bug checking.
+				my_ws.range(indices_to_cell( my_row , 12 )).value = datetime.datetime.today().strftime("%m/%d/%Y")
+
+				# Since even attempting to send the survey hasn't happened yet, update Col 11 with the currently-incomplete status
+				#	Note: this line will sometimes, but not always, be redundant and just rewrite the phrase that's already in the cell. But, thats okay.
+				my_ws.range(indices_to_cell( my_row , 11 )).value = "Only " + str(x_done) + "/" + str(x_total) + " results entered on " + datetime.datetime.today().strftime("%m/%d/%Y")				
 				
+				# Attempt to submit the survey for the employee's result at the current column
 				my_return_value = auto_browser(my_username, my_password, employee_id, fit_test_date, current_col, 0)		
 				
-				# Drake, the program's almost complete. You only have to update column 12 in the REAL spreadsheet (see above), then you
-				# 	have to update column 11 as well depending on auto_browser()'s success (aka its return values). Note: column 11
-				# 	no longer needs to be read; it only needs to be written to now. Because the row we're operating on is a row 
-				# 	that hasn't been operated on before (whether successfully or not), because I programmed the program to ignore those.
-
-
+				# If the submission worked without error, update the status in column 11
+				if my_return_value == "SUBMISSION WORKED": # if you told auto_browser to actually submit
+					x_done = x_done + 1 
+					if x_done == x_total: # Write an "All" phrase to the cell
+						my_ws.range(indices_to_cell( my_row , 11 )).value = "All " + str(x_done) + "/" + str(x_total) + " results entered on " + datetime.datetime.today().strftime("%m/%d/%Y")			
+					else: # Write an "Only" phrase to the cell
+						my_ws.range(indices_to_cell( my_row , 11 )).value = "Only " + str(x_done) + "/" + str(x_total) + " results entered on " + datetime.datetime.today().strftime("%m/%d/%Y")				
+						
+				if my_return_value == "SUBMISSION WORKED (PRETEND)": # if you told auto_browser to run but not hit submit at the end. (for debug purposes)
+					x_done = x_done + 1
+					if x_done == x_total: # Write an "All" phrase to the cell
+						my_ws.range(indices_to_cell( my_row , 11 )).value = "All " + str(x_done) + "/" + str(x_total) + " results entered on " + datetime.datetime.today().strftime("%m/%d/%Y")	+ "   (PRETEND)"
+					else: # Write an "Only" phrase to the cell
+						my_ws.range(indices_to_cell( my_row , 11 )).value = "Only " + str(x_done) + "/" + str(x_total) + " results entered on " + datetime.datetime.today().strftime("%m/%d/%Y") + "   (PRETEND)"
+					
 	elif my_data[my_row][11][0:3] == "Onl": # For this employee, there was some error before that prevented the program from finishing this person's surveys, so I'm gonna leave it undone by the program
 		pass
 	elif my_data[my_row][11][0:3] == "All": # For this employee, all their surveys were put in successfully so nothing needs to be done now.
@@ -392,29 +437,15 @@ for my_row in range(5,SS_rows):
 	else: # An unexpected value was found in this employee's column 11
 		exit("\nError: an item in the \"Redcap Status\" column is not blank nor was written in (at least, correctly) by \nthe program. Make sure that no one's manually written something in there.\n")
 
-	
-		
-exit()
-
-
-mask_or_failure_number = 9 # Can be equal to 4,5,6,7,8. Refers to the 1860S, 1860R, 1870+, Halyard S, Halyard R. Can be also equal to 9 or 10. Refers to Fail-By-Face-Shape and Fail-By-Facial-Hair. 
-submitting_for_real = 0 # Set to 0 if you're just debugging and don't wanna actually submit RedCap forms
-
-# Make sure the numeric arguments are vals and not strings
-# my_return_value = auto_browser(my_username, my_password, employee_id, fit_test_date, mask_or_failure_number, submitting_for_real)
-
-print("Return value is: ", my_return_value)
-
-# The function auto_browser has returned one of four strings: "NOT SUBMITTED YET", "SUBMISSION FAILED", "SUBMISSION WORKED", "SUBMISSION WORKED (PRETEND)"
+# We've edited the Excel spreadsheet with xlwings, and it was open in the GUI if the user wanted to see live changes happening.
+#	But we're done now, so we can close the Excel file which will also close the GUI window.
+time.sleep(5)
+my_wb.close()
 
 
 
-# What to do next:
-# What happens when the user ID put in is incomplete or has no results?
-# Make the spreadsheet work with this program. NOTE: a passing fit test could require multiple forms filled out!
-# Make sure that the date is ripped from the SS
-# Hy just have the program scrub the user ID and date to make sure they're of the right format
-# If you have multiple masks or multiple employee forms to put in, have the Chrome tab open only once and not close
-#	till it's done. That way, you can carry out all the RSF operations in a separate desktop while you do
-#	other computer work yourself, without having the RSF new Chrome window keep popping up in your face.
+# Ways the program can improve:
+# 	- What happens when the user ID put in is incomplete or has no results?
+# 	- If you have multiple masks or multiple employee forms to put in, have the Chrome tab open only once and not close till done.
+#		till it's done.  (This is not that pressing)
 
