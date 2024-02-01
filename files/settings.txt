@@ -1,3 +1,3 @@
 Spreadsheet_path: C:/Users/DS001/OneDrive - Mass General Brigham/ONEDRIVE DOCUMENTS/Shared/N95 Automated Redcap Spreadsheet.xlsx
 Username: ds001
-Password (leave blank if you want to enter every time): 
+Password (leave blank if you want to enter every time):

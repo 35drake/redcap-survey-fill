@@ -359,8 +359,8 @@ for count in range(5,SS_rows):
 #print(my_data[eval(input("Get the cell at row: "))][eval(input("and column: "))],"\n")
 
 # Print relevant spreadsheet contents (the actual employee data)
-for count in range(5,SS_rows):
-	print(my_data[count])
+# for count in range(5,SS_rows):
+#	print(my_data[count])
 
 # COLUMNS GUIDE FOR my_data:
 # Col 0 is Date 			(program will READ this)
