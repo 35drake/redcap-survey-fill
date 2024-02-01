@@ -1,5 +1,7 @@
 # Drake Sorkhab, February 2024
 
+submitting_for_real = 0 # Set to 0 if you're debugging or 1 if you're running
+
 # SUMMARY AND NOTES
 # This is a program that helps you submit several Redcap forms. It's useful when the Redcap
 #	website loads very slowly, because you can have the program transfer spreadsheet
@@ -413,7 +415,7 @@ for my_row in range(5,SS_rows):
 				my_ws.range(indices_to_cell( my_row , 11 )).value = "Only " + str(x_done) + "/" + str(x_total) + " results entered on " + datetime.datetime.today().strftime("%m/%d/%Y")				
 				
 				# Attempt to submit the survey for the employee's result at the current column
-				my_return_value = auto_browser(my_username, my_password, employee_id, fit_test_date, current_col, 0)		
+				my_return_value = auto_browser(my_username, my_password, employee_id, fit_test_date, current_col, submitting_for_real )		
 				
 				# If the submission worked without error, update the status in column 11
 				if my_return_value == "SUBMISSION WORKED": # if you told auto_browser to actually submit
