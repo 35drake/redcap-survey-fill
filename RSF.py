@@ -410,10 +410,6 @@ for my_row in range(5,SS_rows):
 				# I overwrite whatever's in Col 12 (access date) in the REAL Excel spreadsheet's cell, with the current date. This is just for bug checking.
 				my_ws.range(indices_to_cell( my_row , 12 )).value = datetime.datetime.today().strftime("%m/%d/%Y")
 
-				# Since even attempting to send the survey hasn't happened yet, update Col 11 with the currently-incomplete status
-				#	Note: this line will sometimes, but not always, be redundant and just rewrite the phrase that's already in the cell. But, thats okay.
-				my_ws.range(indices_to_cell( my_row , 11 )).value = "Only " + str(x_done) + "/" + str(x_total) + " results entered on " + datetime.datetime.today().strftime("%m/%d/%Y")				
-				
 				# Attempt to submit the survey for the employee's result at the current column
 				my_return_value = auto_browser(my_username, my_password, employee_id, fit_test_date, current_col, submitting_for_real )		
 				
