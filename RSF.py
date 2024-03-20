@@ -29,6 +29,11 @@ submitting_for_real = 1 # Set to 0 if you're debugging or 1 if you're running
 #	handling single-letter variable names, so during debug don't send a command like 
 #	"a = driver.find_element("id","blah").
 
+# BUG NOTE
+# The program doesn't consistently write to the Excel spreadsheet (to signify that a result has been successfully uploaded)
+#	unless your computer has no other Excel files open. It's possible that the Excel spreadsheet must only be open
+#	on this computer as well and no others (i.e. you must be careful with OneDrive files).
+
 # PROGRAM OUTLINE
 # See the sample spreadsheet to understand the goals of this program. For every "x" that an employee has in a cell,
 #	a RedCap form must be submitted. Note that column "L" of the spreadsheet contains data, written by the program,
