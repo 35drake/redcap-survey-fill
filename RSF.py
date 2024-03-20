@@ -191,9 +191,15 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 
 	# I can't figure out how to select the option from the drop-down list, so let's click this one
 	#	weird "leftdiv" on the page, which isn't a button but is some clickable region I
-	#	guess (but the click is designed to do nothing). Anyway, this makes the website \
+	#	guess (but the click is designed to do nothing). Anyway, this makes the website
 	# 	respond by automatically selecting the (hopefully) only employee in the dropdown list.
-	driver.find_element("id","respirator_fit_testing-left").click()
+	# NOTE: actually, using "respirator_fit_testing-left" only works on my desktop but throws an
+	#	error on my laptop for some reason, so let's click on the text box ("Enter Employee") 
+	#	to the left of the text entry box as a backup.
+	try:
+		driver.find_element("id","respirator_fit_testing-left").click()
+	except:
+		driver.find_element("xpath",r"""//*[@id="inputfield"]/label""").click()
 
 	# Spam the Select Employee button until it's actually clickable. Unfortunately, Selenium still
 	#	thinks it's "clickable" even after the website already registers the click. So, we have
