@@ -33,6 +33,9 @@ submitting_for_real = 1 # Set to 0 if you're debugging or 1 if you're running
 # The program doesn't consistently write to the Excel spreadsheet (to signify that a result has been successfully uploaded)
 #	unless your computer has no other Excel files open. It's possible that the Excel spreadsheet must only be open
 #	on this computer as well and no others (i.e. you must be careful with OneDrive files).
+# I think the real issue is that you must be SIGNED IN to MS Office, which isn't always obvious (it can halfway "sign you out"
+#	if you sign in on another laptop). And you must have auto-save clicked on (do this by opening any Excel sheet, not
+#	while the program's running, and set the auto-save slide to "ON").
 
 # PROGRAM OUTLINE
 # See the sample spreadsheet to understand the goals of this program. For every "x" that an employee has in a cell,
