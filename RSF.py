@@ -39,22 +39,41 @@ submitting_for_real = 1 # Set to 0 if you're debugging or 1 if you're running
 #	If there's a problem and all forms don't get in successfully, that employee's "L" cell will stay yellow.
 
 
-import pandas # for reading Excel data
-import xlwings # for writing to Excel sheet (change one cell)
+import os # to install libraries with pip properly
+
+try:
+	import pandas # for reading Excel data
+except:
+	os.system("pip install pandas")
+	import pandas
+
+try:
+	import xlwings # for writing to Excel sheet (change one cell)
+except:
+	os.system("pip install xlwings")
+	import xlwings
+
+try:
+	from selenium import webdriver # to launch an automated web browser
+except:
+	os.system("pip3 install -U selenium") # As of March 2024, this doesn't work with normal "pip"; only "pip3" works
+	from selenium import webdriver 
+
+from selenium.webdriver.chrome.service import Service as ChromeService # so that Chrome specifically can be used as the browser
+
+try:
+	import openpyxl #This sublibrary is needed to run the program. I believe that pandas is using it.
+except:
+	os.system("pip install openpyxl")
+	import openpyxl
+
+
 import datetime # For converting Excel dates into strings and getting today's date
 import time # For checking time elapsed with time.time() and a possible a pause with time.sleep()
 import getpass # For a hidden password input through getpass.getpass()
 
 # Basically this is used to tell us when HTML buttons aren't clickable
 from selenium.common.exceptions import WebDriverException
-
-# Import tools that I don't understand:
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-
-# So I can navigate the webpage with tab and space keys (no longer used though):
-#	from selenium.webdriver.common.keys import Keys
-#	from selenium.webdriver.common.action_chains import ActionChains
 
 # Seems like I don't need this because pandas will have numpy type support builtin
 #	import numpy
@@ -333,7 +352,7 @@ my_password = settings[2]
 
 # Ask for the password if it's not in the settings (left blank in the settings.txt file)
 if my_password == "":
-	my_password = getpass.getpass("Your password is not stored in your settings. Please type in your password now (it will not be stored): ")
+	my_password = getpass.getpass("\nYour password is not stored in your settings. Please type in your password now (it will not be stored): ")
 
 # If the Excel file is already open (and it's stored in OneDrive), pandas will fail to open it. This will close the Excel file if it is currently open.
 close_Excel(SS_path)
