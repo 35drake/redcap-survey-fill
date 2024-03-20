@@ -1,6 +1,6 @@
 # Drake Sorkhab, February 2024
 
-submitting_for_real = 0 # Set to 0 if you're debugging or 1 if you're running
+submitting_for_real = 1 # Set to 0 if you're debugging or 1 if you're running
 
 # SUMMARY AND NOTES
 # This is a program that helps you submit several Redcap forms. It's useful when the Redcap
