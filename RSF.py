@@ -157,13 +157,15 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 	if len(employee_id_as_string)!=9:
 		print("Error, employee ID is not 9 characters long.",employee_id_as_string,"\n")
 		print(len(employee_id_as_string))
-		return(my_return_value)
+		# Comment out the below line if you don't care
+		# return(my_return_value)
 	if employee_id_as_string.isdigit == False:
 		print("Error, employee ID is not all digits.",employee_id_as_string,"\n")
 		for a_char in employee_id_as_string:
 			print(a_char)
 			print("Order:",ord(a_char))
-		return(my_return_value)
+		# Comment out the below line if you don't care
+		# return(my_return_value)
 	
 	# Make the browser headless and set the URL of the Redcap survey:
 	options = webdriver.ChromeOptions() ; options.headless = True ; url = "https://redcap.partners.org/redcap/plugins/survey_token/survey_token_login.php?pid=18168&hash=988968e7-e9d0-4581-9c1e-0ddd3f5b8036"
