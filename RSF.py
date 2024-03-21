@@ -266,6 +266,10 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 		spam_by_x(driver,Small_xpath)
 		spam_by_x(driver,Yes_xpath)
 		spam_by_x(driver,Mask1860S_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
+		spam_by_x(driver,Mask1860S_xpath)
+		spam_by_x(driver,N95_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
 		spam_by_x(driver,N95_xpath)
 	
 	# A passed 1860R Fit test:
@@ -273,6 +277,10 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 		spam_by_x(driver,MedReg_xpath)
 		spam_by_x(driver,Yes_xpath)
 		spam_by_x(driver,Mask1860R_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
+		spam_by_x(driver,Mask1860R_xpath)
+		spam_by_x(driver,N95_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
 		spam_by_x(driver,N95_xpath)
 
 	# A passed 1870+ Fit test:
@@ -280,6 +288,10 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 		spam_by_x(driver,MedReg_xpath)
 		spam_by_x(driver,Yes_xpath)
 		spam_by_x(driver,Mask1870Plus_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
+		spam_by_x(driver,Mask1870Plus_xpath)
+		spam_by_x(driver,N95_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
 		spam_by_x(driver,N95_xpath)
 
 	# A passed Halyard Small Fit test:
@@ -287,6 +299,10 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 		spam_by_x(driver,Small_xpath)
 		spam_by_x(driver,Yes_xpath)
 		spam_by_x(driver,HalyardSmall_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
+		spam_by_x(driver,HalyardSmall_xpath)
+		spam_by_x(driver,N95_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
 		spam_by_x(driver,N95_xpath)
 
 	# A passed Halyard Regular Fit test:
@@ -294,6 +310,10 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 		spam_by_x(driver,MedReg_xpath)
 		spam_by_x(driver,Yes_xpath)
 		spam_by_x(driver,HalyardRegular_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
+		spam_by_x(driver,HalyardRegular_xpath)
+		spam_by_x(driver,N95_xpath)		
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
 		spam_by_x(driver,N95_xpath)		
 
 	# A completely failed Fit Test due to facial size or shape ("Failed N95 options")
@@ -301,6 +321,10 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 		spam_by_x(driver,Failed_xpath)
 		spam_by_x(driver,No_xpath)		
 		spam_by_x(driver,FacialSize_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
+		spam_by_x(driver,FacialSize_xpath)
+		spam_by_x(driver,PAPR_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
 		spam_by_x(driver,PAPR_xpath)
 
 	# A completely failed Fit Test due to facial hair
@@ -308,14 +332,19 @@ def auto_browser(username, password, employee_id, fit_test_date, mask_or_failure
 		spam_by_x(driver,Failed_xpath)
 		spam_by_x(driver,No_xpath)		
 		spam_by_x(driver,FacialHair_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
+		spam_by_x(driver,FacialHair_xpath)
 		spam_by_x(driver,PAPR_xpath)
+		time.sleep(2) #lets wait and click again, so the button click is actually visual
+		spam_by_x(driver,PAPR_xpath)
+
 	else:
 		print("The function auto_browser() did not get a valid option passed as argument mask_or_failure_number.\n")
 		driver.close()
 		return(my_return_value)
 
 	# Wait a few seconds before submitting, just in case the user wants to quickly see what the program's doing on the survey	
-	time.sleep(5)
+	time.sleep(3)
 
 	# Submit the completed form (make sure this is OFF if you're bug testing)
 	if submitting_for_real: # set this to 1 if you're running the program for real
